@@ -1,0 +1,7 @@
+/node_modules/
+/.content/
+/.build/
+/public/
+.DS_Store
+*.log
+vuepress/secret.js

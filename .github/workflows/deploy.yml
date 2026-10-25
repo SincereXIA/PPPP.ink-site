@@ -1,0 +1,160 @@
+name: Build and deploy website
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      content_ref:
+        description: Content branch or SHA to preview; production updates use main
+        required: false
+        default: main
+        type: string
+      content_sha:
+        description: Content commit that triggered this run (for tracing)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+# Serialize the whole production pipeline. A queued run checks out the latest
+# main branches when it starts, even if GitHub replaces an intermediate run.
+concurrency:
+  group: pppp-ink-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
+  cancel-in-progress: false
+
+env:
+  CONTENT_REPOSITORY: SincereXIA/PPPP.ink
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      site_sha: ${{ steps.revisions.outputs.site_sha }}
+      content_sha: ${{ steps.revisions.outputs.content_sha }}
+    steps:
+      - name: Validate requested content revision
+        env:
+          CONTENT_SHA: ${{ inputs.content_sha }}
+        run: |
+          if [ -n "$CONTENT_SHA" ] && ! [[ "$CONTENT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo '::error::content_sha must be a full 40-character Git commit SHA.'
+            exit 1
+          fi
+
+      - name: Checkout website framework
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+          persist-credentials: false
+
+      - name: Checkout content with article history
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CONTENT_REPOSITORY }}
+          ref: ${{ inputs.content_ref || 'main' }}
+          path: .content
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record source revisions
+        id: revisions
+        run: |
+          echo "site_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "content_sha=$(git -C .content rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify repository assembly
+        run: npm test
+
+      - name: Verify article images
+        run: npm run check:images
+
+      - name: Build VuePress website
+        env:
+          VALINE_APP_KEY: ${{ secrets.VALINE_APP_KEY }}
+        run: npm run build
+
+      - name: Verify deployed images and write revision manifest
+        env:
+          SITE_SHA: ${{ steps.revisions.outputs.site_sha }}
+          CONTENT_SHA: ${{ steps.revisions.outputs.content_sha }}
+          TRIGGER_CONTENT_SHA: ${{ inputs.content_sha }}
+        run: |
+          npm run check:images -- --dist
+          node -e 'require("fs").writeFileSync("public/build-info.json", JSON.stringify({site:process.env.SITE_SHA,content:process.env.CONTENT_SHA}) + "\n")'
+          printf 'Website: `%s`\n\nContent: `%s`\n' "$SITE_SHA" "$CONTENT_SHA" >> "$GITHUB_STEP_SUMMARY"
+          printf '\nTrigger content: `%s`\n' "${TRIGGER_CONTENT_SHA:-none}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload website artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-${{ github.run_id }}-${{ github.run_attempt }}
+          path: public/
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check that both source revisions are still current
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SITE_REPOSITORY: ${{ github.repository }}
+          SITE_SHA: ${{ needs.build.outputs.site_sha }}
+          CONTENT_SHA: ${{ needs.build.outputs.content_sha }}
+        run: |
+          latest_site=$(gh api "repos/$SITE_REPOSITORY/commits/main" --jq .sha)
+          latest_content=$(gh api "repos/$CONTENT_REPOSITORY/commits/main" --jq .sha)
+          if [ "$SITE_SHA" = "$latest_site" ] && [ "$CONTENT_SHA" = "$latest_content" ]; then
+            echo 'deploy=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'deploy=false' >> "$GITHUB_OUTPUT"
+            echo 'Skipped deployment because a newer framework or content commit exists.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Download website artifact
+        if: steps.current.outputs.deploy == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: website-${{ github.run_id }}-${{ github.run_attempt }}
+          path: public
+
+      - name: Validate production settings
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLY_USERNAME }}
+          DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          VALINE_APP_KEY: ${{ secrets.VALINE_APP_KEY }}
+        run: |
+          for setting in DEPLOY_HOST DEPLOY_USER DEPLOY_KEY VALINE_APP_KEY; do
+            if [ -z "${!setting}" ]; then
+              echo "::error::Missing production setting: $setting"
+              exit 1
+            fi
+          done
+
+      - name: Deploy to existing website server
+        if: steps.current.outputs.deploy == 'true'
+        uses: Burnett01/rsync-deployments@4.1
+        with:
+          switches: -avzr --delete
+          path: public/
+          remote_path: /home/wwwroot/pppp.ink/public/
+          remote_host: ${{ secrets.DEPLY_HOST }}
+          remote_user: ${{ secrets.DEPLY_USERNAME }}
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
