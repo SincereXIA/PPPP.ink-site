@@ -46,6 +46,7 @@ CONTENT_DIR=/绝对路径/PPPP.ink npm run check:images -- --dist
 - 正文仓库 `main` 更新：正文仓库调用本仓库 `deploy.yml` 的 `workflow_dispatch`，通过 `content_sha` 记录触发此次构建的内容提交。
 - 生产流水线串行执行，并在开始时拉取两个仓库的最新 `main`。快速连续提交时，GitHub 可能合并等待中的运行；最后开始的运行仍会获取最新正文和框架，不会因为通知延迟而回退到旧内容。
 - PR 只构建，不发布。部署前再次校验两个 SHA，已经过时的构建会跳过发布；下一次排队运行将重新获取最新版本。每次运行的 Summary 和网站的 `/build-info.json` 记录实际使用的两个提交 SHA。
+- 发布后通过 HTTPS 检查线上 `/build-info.json`，确认实际提供服务的是本次构建的版本。
 
 手动运行可以通过 `content_ref` 构建指定的内容分支或 SHA，用于合并前验证。只有实际构建的两个 SHA 都与各自最新 `main` 一致时，才会部署到生产。
 
