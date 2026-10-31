@@ -31,6 +31,7 @@ npm run preview
 - `content/blogs/` 的公开文章显示在首页和归档；`content/docs/` 的文档显示在文档页，并参与全文搜索和订阅。
 - 兼容现有 `title`、`date`、`lastmod`、`tags`、`categories`；更新时间优先从内容仓库 Git 历史取得。
 - `publish: false`、`draft: true` 和带有非空 `keys` 的文章在组装时排除，开发预览也不加载。它们不会进入网页、搜索、订阅和 OG 图片；源文件与已存在的图片仍留在内容仓库。
+- 首页摘要优先使用 frontmatter 的 `description`，否则只显示正文中 `<!-- more -->` 前的内容，不截取标记后的正文，也不按固定字数截断手写摘要。无标记且无 `description` 时只显示文章标题、日期和缩略图；详情页保留完整正文。
 - 缩略图默认使用正文第一张本地图片。可在内容 frontmatter 中设置 `cover: /images/文件名` 指定图片，或 `cover: false` 关闭。也支持相对于文章的附件路径。
 - 图片继续使用 `/images/...`；相对附件保留原公开地址；构建验证图片原始 SHA-256。
 - 旧文章通过 `legacy-routes.json` 固定原来的 `.html` 或目录 URL。新文章可设置绝对站内 `permalink`，否则沿用内容目录及文件名。`slug` 不覆盖旧地址。

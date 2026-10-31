@@ -2,6 +2,7 @@ import type { CollectionEntry } from 'astro:content'
 import type { Language } from '@/i18n/config'
 import MarkdownIt from 'markdown-it'
 import { defaultLocale } from '@/config'
+import { getMarkedSummary } from './summary.mjs'
 
 type ExcerptScene = 'list' | 'meta' | 'og' | 'feed'
 
@@ -35,7 +36,7 @@ const htmlEntityMap: Record<string, string> = {
 }
 
 // Creates a clean text excerpt with length limits by language and scene
-function getExcerpt(text: string, lang: Language, scene: ExcerptScene): string {
+function getExcerpt(text: string, lang: Language, scene: ExcerptScene, truncate = true): string {
   const isCJK = (lang: Language) => ['zh', 'zh-tw', 'ja', 'ko'].includes(lang)
   const length = isCJK(lang)
     ? excerptLengths[scene].cjk
@@ -55,10 +56,10 @@ function getExcerpt(text: string, lang: Language, scene: ExcerptScene): string {
   // Normalize CJK punctuation spacing
   cleanText = cleanText.replace(/([。？！："」』])\s+/g, '$1')
 
-  const excerpt = cleanText.slice(0, length).trim()
+  const excerpt = (truncate ? cleanText.slice(0, length) : cleanText).trim()
 
   // Remove trailing punctuation and add ellipsis
-  if (cleanText.length > length) {
+  if (truncate && cleanText.length > length) {
     return `${excerpt.replace(/\p{P}+$/u, '')}...`
   }
 
@@ -79,15 +80,21 @@ export function getPostDescription(
       : post.data.description
   }
 
-  const rawContent = post.body || ''
-  const cleanContent = rawContent
+  const markedSummary = getMarkedSummary(post.body || '')
+  // Homepage cards show authored summaries only, never an automatic body excerpt.
+  if (scene === 'list' && markedSummary === undefined) return ''
+
+  const rawContent = markedSummary ?? post.body ?? ''
+  const excerptContent = markedSummary === undefined
+    ? rawContent.replace(/^\s*#{1,6}\s+\S.*$/gm, '')
+    : rawContent
+  const cleanContent = excerptContent
     .replace(/<!--[\s\S]*?-->/g, '') // Remove HTML comments
     .replace(/```[\s\S]*?```/g, '') // Remove code blocks
-    .replace(/^\s*#{1,6}\s+\S.*$/gm, '') // Remove Markdown headings
     .replace(/^\s*::.*$/gm, '') // Remove directive containers
     .replace(/^\s*>\s*\[!.*\]$/gm, '') // Remove GitHub admonition markers
     .replace(/\n{2,}/g, '\n\n') // Normalize newlines
 
   const renderedContent = markdownParser.render(cleanContent)
-  return getExcerpt(renderedContent, lang, scene)
+  return getExcerpt(renderedContent, lang, scene, scene !== 'list')
 }
