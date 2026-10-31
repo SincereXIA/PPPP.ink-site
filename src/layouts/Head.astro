@@ -33,6 +33,10 @@ const siteDescription = i18nTitle ? currentUI.description : description
 
 // Page Metadata
 const pageTitle = postTitle ? `${postTitle} | ${siteTitle}` : `${siteTitle} - ${siteSubtitle}`
+// Registered Chinese name belongs in the browser title, not the page header.
+const browserTitle = postTitle
+  ? `${postTitle} | 粉墨日记 · ${siteTitle}`
+  : `粉墨日记 · ${siteTitle} - ${siteSubtitle}`
 const pageDescription = postDescription || siteDescription
 const canonical = postSlug
   ? new URL(getPostPath(postSlug, currentLang), themeConfig.site.url)
@@ -49,7 +53,7 @@ const pageImage = new URL(postSlug ? `${base}/og/${postSlug}.png` : `${base}/and
 {favicon.toLowerCase().endsWith('.svg') && <link rel="icon" type="image/svg+xml" href={`${base}${favicon}`} />}
 {favicon.toLowerCase().endsWith('.png') && <link rel="icon" type="image/png" href={`${base}${favicon}`} />}
 {favicon.toLowerCase().endsWith('.ico') && <link rel="icon" type="image/x-icon" href={`${base}${favicon}`} />}
-<title>{pageTitle}</title>
+<title>{browserTitle}</title>
 <meta name="description" content={pageDescription} />
 <meta name="author" content={author} />
 <meta name="generator" content={Astro.generator} />
@@ -57,7 +61,6 @@ const pageImage = new URL(postSlug ? `${base}/og/${postSlug}.png` : `${base}/and
 
 <!-- Preload -->
 <link rel="preload" href={`${base}/fonts/EarlySummer-VF-Split/EarlySummer-VF-Subset.woff2`} as="font" type="font/woff2" crossorigin />
-<link rel="preload" href={`${base}/fonts/Snell-Black-SF.woff2`} as="font" type="font/woff2" crossorigin />
 <link rel="preload" href={`${base}/fonts/Snell-Bold-SF.woff2`} as="font" type="font/woff2" crossorigin />
 <link rel="preload" href={`${base}/fonts/STIX-VF.woff2`} as="font" type="font/woff2" crossorigin />
 <link rel="preload" href={`${base}/fonts/STIX-Italic-VF.woff2`} as="font" type="font/woff2" crossorigin />
