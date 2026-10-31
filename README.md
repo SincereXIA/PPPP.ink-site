@@ -38,6 +38,8 @@ CONTENT_DIR=/绝对路径/PPPP.ink npm run check:images -- --dist
 
 `CONTENT_DIR` 是包含 `content/` 和 `image-sources.json` 的正文仓库根目录。构建不会修改正文或框架源文件。正文中的 `/images/...` 引用保持不变；每次构建都会清理并重建 `.build/content/`。正文 Git 历史用于保留文章的最近更新时间；“编辑此页”继续指向正文仓库的 `main/content/`。
 
+在 Markdown 顶部的 frontmatter 设置 `publish: false` 可停止发布文章：源文件及图片仍保留在内容仓库，构建时不复制该文章，因此文章网页、列表、搜索、RSS 和站点地图均不会包含它。仅设置 `draft: true` 不会触发此规则。
+
 本地不设置 `VALINE_APP_KEY` 也可以构建。需要验证评论时通过环境变量提供，勿将凭据写入源码。`npm run dev` 会在启动时复制正文；正文修改后重启预览以重新组装。
 
 ## 双仓库自动发布

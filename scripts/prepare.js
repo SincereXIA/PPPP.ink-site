@@ -15,9 +15,18 @@ function prepare({ root, contentRoot, buildDir }) {
   fs.mkdirSync(buildDir, { recursive: true })
   fs.cpSync(source, buildDir, {
     recursive: true,
-    filter: file => !path.relative(source, file).split(path.sep).some(
-      part => ['.vuepress', '.obsidian', '.git', '.DS_Store', 'private', 'node_modules'].includes(part)
-    )
+    filter: file => {
+      if (path.relative(source, file).split(path.sep).some(
+        part => ['.vuepress', '.obsidian', '.git', '.DS_Store', 'private', 'node_modules'].includes(part)
+      )) return false
+      if (path.extname(file) === '.md' && fs.statSync(file).isFile()) {
+        const frontmatter = fs.readFileSync(file, 'utf8').match(/^\uFEFF?---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/)
+        // Only a root-level YAML boolean disables publication. A quoted string
+        // or an example in the article body must not hide a page.
+        if (frontmatter && /^publish[ \t]*:[ \t]*(?:false|False|FALSE)[ \t]*(?:#[^\r\n]*)?\r?$/m.test(frontmatter[1])) return false
+      }
+      return true
+    }
   })
   const vuepressDir = path.join(buildDir, '.vuepress')
   fs.cpSync(path.join(root, 'vuepress'), vuepressDir, { recursive: true })

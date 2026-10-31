@@ -56,6 +56,23 @@ test('content assets cannot overwrite framework assets', t => {
   assert.throws(() => prepare(f), /Content asset conflicts/)
 })
 
+test('unpublished Markdown is excluded from the website while the original article and images remain', t => {
+  const f = fixture(t)
+  const hidden = '\uFEFF---\r\ntitle: Hidden article\r\npublish: false # keep the source\r\n---\r\nPrivate article text'
+  f.write('content-repo/content/blogs/hidden.md', hidden)
+  f.write('content-repo/content/blogs/published.md', '---\npublish: true\n---\nPublic article')
+  f.write('content-repo/content/blogs/string.md', '---\npublish: "false"\n---\nA string is not a boolean')
+  f.write('content-repo/content/blogs/example.md', '---\ntitle: Example\n---\npublish: false\nThis is an example in the article body')
+  f.write('site/.build/content/blogs/hidden.md', 'Previously published content')
+  prepare(f)
+  assert.equal(fs.existsSync(path.join(f.buildDir, 'blogs/hidden.md')), false)
+  for (const name of ['published.md', 'string.md', 'example.md']) {
+    assert.equal(fs.existsSync(path.join(f.buildDir, 'blogs', name)), true)
+  }
+  assert.equal(fs.readFileSync(path.join(f.contentRoot, 'content/blogs/hidden.md'), 'utf8'), hidden)
+  assert.deepEqual(fs.readFileSync(path.join(f.buildDir, '.vuepress/public/images/example.png')), Buffer.from([0, 255, 42]))
+})
+
 test('article timestamps come from the content repository, not the generated tree', t => {
   const f = fixture(t)
   execFileSync('git', ['init', '-q', f.contentRoot])
