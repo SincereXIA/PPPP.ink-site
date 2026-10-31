@@ -51,14 +51,6 @@ module.exports = {
           {
             "text": "北航",
             "link": "/docs/buaa/"
-          },
-          {
-            "text": "前端基础",
-            "link": "/docs/learn-frontend/"
-          },
-          {
-            "text": "golang",
-            "link": "/docs/golang/"
           }
         ]
       },
@@ -82,9 +74,6 @@ module.exports = {
     //     "plugin",
     //     "api"
     //   ],
-    //   "/docs/learn-frontend/" :[
-    //     "",
-    //   ]
     // },
     //"type": "blog",
     "blogConfig": {
