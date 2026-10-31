@@ -6,7 +6,7 @@
     "sha256": "974bbcc14bfad5995a138aedb25584422ea73ce59a2b21730da38b2c139f2692",
     "bytes": 2330,
     "references": [
-      "src/components/Footer.astro"
+      "src/components/LegalFooter.astro"
     ]
   }
 ]

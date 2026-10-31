@@ -2,6 +2,7 @@
 import type { Language } from '@/i18n/config'
 import Button from '@/components/Button.astro'
 import Footer from '@/components/Footer.astro'
+import LegalFooter from '@/components/LegalFooter.astro'
 import Header from '@/components/Header.astro'
 import Navbar from '@/components/Navbar.astro'
 import CodeCopyButton from '@/components/Widgets/CodeCopyButton.astro'
@@ -43,12 +44,12 @@ const MarginBottom = isPost && themeConfig.comment.enabled
   ]}
 >
   <Head {postTitle} {postDescription} {postSlug} />
-  <body>
+  <body class="min-h-dvh flex flex-col">
     <a class="skip-link" href="#main-content">跳转到正文</a>
     <div
-      class="mx-auto max-w-205.848 min-h-vh w-full min-h-dvh"
+      class="mx-auto max-w-205.848 w-full flex-1"
       p="x-[min(7.25vw,3.731rem)] y-10"
-      lg="mx-[max(5.75rem,calc(50vw-34.25rem))] my-20 max-w-[min(calc(75vw-16rem),44rem)] min-h-full p-0"
+      lg="mx-[max(5.75rem,calc(50vw-34.25rem))] my-20 max-w-[min(calc(75vw-16rem),44rem)] p-0"
     >
       <Header />
       <Navbar />
@@ -57,6 +58,7 @@ const MarginBottom = isPost && themeConfig.comment.enabled
       </main>
       <Footer />
     </div>
+    <LegalFooter />
     <Button supportedLangs={supportedLangs} />
     <SoundEffect />
     <CodeCopyButton />
