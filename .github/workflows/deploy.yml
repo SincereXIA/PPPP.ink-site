@@ -80,7 +80,7 @@ jobs:
       - name: Verify article images
         run: npm run check:images
 
-      - name: Build VuePress website
+      - name: Build Astro 7 / Retypeset website
         env:
           VALINE_APP_KEY: ${{ secrets.VALINE_APP_KEY }}
         run: npm run build

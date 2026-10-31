@@ -1,75 +1,63 @@
 # PPPP.ink 网站框架
 
-本仓库保存 VuePress 1、定制主题、组件、样式和构建部署流水线。正文、图片、附件及内容编辑配置保存在 [SincereXIA/PPPP.ink](https://github.com/SincereXIA/PPPP.ink)。不再加载 `Private.PPPP.ink`。
+基于 [Retypeset](https://github.com/radishzzz/astro-theme-retypeset) 的 Astro 7 静态博客。正文、图片和附件继续由 [SincereXIA/PPPP.ink](https://github.com/SincereXIA/PPPP.ink) 独立维护，两个仓库的 main 更新都会触发原有 GitHub Actions 和服务器发布。
 
-## 目录
+保留 Retypeset 的左右布局、字体、配色、深色模式、视图过渡、文章排版、目录、图片放大、代码复制与 RSS。首页只在原生文章列表最左侧增加缩略图，有图的文章图文并排，无图文章正常显示文字。手机使用较小的缩略图和主题原有的顶部布局。
 
-```text
-vuepress/              网站配置、主题、组件和站点资源
-scripts/               正文组装、图片校验和构建入口
-image-sources.json     框架图片的来源、引用及校验值
-test/                  仓库组装和文章 Git 时间验证
-.github/workflows/     构建与服务器发布
-.content/              正文仓库的本地 checkout（忽略）
-.build/content/        自动组装的 VuePress 输入（忽略）
-public/                网站构建产物（忽略）
-```
+## 本地运行
 
-## 本地预览
-
-使用 `.nvmrc` 指定的 Node.js 22：
+使用 `.nvmrc` 指定的 Node.js 24 LTS：
 
 ```bash
-git clone git@github.com:SincereXIA/PPPP.ink-site.git
-cd PPPP.ink-site
-git clone git@github.com:SincereXIA/PPPP.ink.git .content
 npm ci
+git clone git@github.com:SincereXIA/PPPP.ink.git .content
 npm run dev
 ```
 
-已有正文工作目录时无需再次克隆：
+也可使用已有内容仓库：
 
 ```bash
 CONTENT_DIR=/绝对路径/PPPP.ink npm run dev
+CONTENT_DIR=/绝对路径/PPPP.ink npm run build
+CONTENT_DIR=/绝对路径/PPPP.ink npm run check:images -- --dist
+npm run preview
+```
+
+`npm run build` 自动完成内容组装、Astro/TypeScript 检查、静态构建、旧路径落盘、Pagefind 中文全文搜索索引和站点完整性校验。开发服务器不生成搜索索引；验证搜索请先 build，再 preview。内容变更后重启 dev 重新组装。所有生成文件都写入忽略的 `.build/`、`.astro/` 和 `public/`，不会修改任何源文章。
+
+## 内容接入
+
+- `content/about.md` 维护关于页正文。
+- `content/blogs/` 的公开文章显示在首页和归档；`content/docs/` 的文档显示在文档页，并参与全文搜索和订阅。
+- 兼容现有 `title`、`date`、`lastmod`、`tags`、`categories`；更新时间优先从内容仓库 Git 历史取得。
+- `publish: false`、`draft: true` 和带有非空 `keys` 的文章在组装时排除，开发预览也不加载。它们不会进入网页、搜索、订阅和 OG 图片；源文件与已存在的图片仍留在内容仓库。
+- 缩略图默认使用正文第一张本地图片。可在内容 frontmatter 中设置 `cover: /images/文件名` 指定图片，或 `cover: false` 关闭。也支持相对于文章的附件路径。
+- 图片继续使用 `/images/...`；相对附件保留原公开地址；构建验证图片原始 SHA-256。
+- 旧文章通过 `legacy-routes.json` 固定原来的 `.html` 或目录 URL。新文章可设置绝对站内 `permalink`，否则沿用内容目录及文件名。`slug` 不覆盖旧地址。
+- 旧 `/tag/` 链接跳转到 Retypeset `/tags/`；分类、归档、文档入口保留。主动删除旧内容时同步更新 `legacy-pages.json` 中的预期路径，避免发布无意的链接丢失。
+- 算法与操作系统文档保留 KaTeX、代码高亮以及原有 `==高亮==`、上下标写法。
+
+Valine 升至 1.5.3，继续使用原 LeanCloud 应用、文章 URL 与历史评论。构建通过 `VALINE_APP_KEY` 环境变量启用评论。本地未设置时仍可完整构建；不要把凭据写入文件。该客户端应用标识的使用方式与旧站一致，不使用管理密钥。
+
+## 部署与验证
+
+框架 main 推送或内容仓库通知会触发 `.github/workflows/deploy.yml`。生产流水线串行执行，每次开始获取两个最新 main，发布前再次比较 SHA，过时构建跳过发布。PR 构建和指定内容分支预览不发布到生产。产物继续部署到原服务器 `/home/wwwroot/pppp.ink/public/`，并通过 HTTPS `/build-info.json` 确认实际生效版本。
+
+框架 secrets：`VALINE_APP_KEY`、`DEPLY_HOST`、`DEPLY_USERNAME`、`SSH_PRIVATE_KEY`。内容仓库保留 `SITE_WORKFLOW_TOKEN`，fine-grained PAT 仅需框架仓库的 Actions: Read and write。无需 Private.PPPP.ink。
+
+```bash
+npm test
 CONTENT_DIR=/绝对路径/PPPP.ink npm run check:images
 CONTENT_DIR=/绝对路径/PPPP.ink npm run build
 CONTENT_DIR=/绝对路径/PPPP.ink npm run check:images -- --dist
 ```
 
-`CONTENT_DIR` 是包含 `content/` 和 `image-sources.json` 的正文仓库根目录。构建不会修改正文或框架源文件。正文中的 `/images/...` 引用保持不变；每次构建都会清理并重建 `.build/content/`。正文 Git 历史用于保留文章的最近更新时间；“编辑此页”继续指向正文仓库的 `main/content/`。
+站点检查覆盖旧路径、文章标题与 canonical、OG 图片、隐藏文章和所有页面的本地链接/资源。上线另检查实际 HTTPS、搜索、深色模式及手机布局。
 
-在 Markdown 顶部的 frontmatter 设置 `publish: false` 可停止发布文章：源文件及图片仍保留在内容仓库，构建时不复制该文章，因此文章网页、列表、搜索、RSS 和站点地图均不会包含它。仅设置 `draft: true` 不会触发此规则。
+## 主题来源与升级
 
-本地不设置 `VALINE_APP_KEY` 也可以构建。需要验证评论时通过环境变量提供，勿将凭据写入源码。`npm run dev` 会在启动时复制正文；正文修改后重启预览以重新组装。
+Retypeset 上游基线：`radishzzz/astro-theme-retypeset@a636b6d393be714cab52d3fc4baddd3f3905f701`（2026-10-31 导入）。MIT 许可见 `LICENSE`。`src/` 和 `static/` 中保留原主题组件与资源；站点定制见 `docs/retypeset-changes.md`。升级主题时对照此基线合并；内容继续在独立仓库写作。
 
-## 双仓库自动发布
+Astro 7 使用官方支持的 Unified Markdown 管线，以保持 Retypeset 的 remark/rehype 插件。UnoCSS 与官方 MDX 集成更新到支持 Astro 7 / Vite 8 的版本。原 `astro-og-canvas` 未声明支持 Astro 7，因此只替换分享图片的构建实现，使用本地字体生成 PNG，不依赖上游演示截图服务。VuePress、Vue 2、webpack 4 及 OpenSSL legacy provider 已移除。
 
-- 本仓库 `main` 更新：触发网站重新构建。
-- 正文仓库 `main` 更新：正文仓库调用本仓库 `deploy.yml` 的 `workflow_dispatch`，通过 `content_sha` 记录触发此次构建的内容提交。
-- 生产流水线串行执行，并在开始时拉取两个仓库的最新 `main`。快速连续提交时，GitHub 可能合并等待中的运行；最后开始的运行仍会获取最新正文和框架，不会因为通知延迟而回退到旧内容。
-- PR 只构建，不发布。部署前再次校验两个 SHA，已经过时的构建会跳过发布；下一次排队运行将重新获取最新版本。每次运行的 Summary 和网站的 `/build-info.json` 记录实际使用的两个提交 SHA。
-- 发布后通过 HTTPS 检查线上 `/build-info.json`，确认实际提供服务的是本次构建的版本。
-
-手动运行可以通过 `content_ref` 构建指定的内容分支或 SHA，用于合并前验证。只有实际构建的两个 SHA 都与各自最新 `main` 一致时，才会部署到生产。
-
-通知 workflow 仅在正文仓库，构建与部署 workflow 仅在框架仓库，避免互相触发。
-
-## GitHub 首次配置
-
-1. 创建 `SincereXIA/PPPP.ink-site`，默认分支为 `main`，上传本仓库。当前正文仓库为公开仓库，所以 checkout 正文无需额外的私有仓库密钥。
-2. 在**框架仓库**配置 Actions secrets：
-
-   | Secret | 用途 |
-   | --- | --- |
-   | `VALINE_APP_KEY` | 原 `SECRET_JS` 中的 `valineAppKey` 值；新框架直接从环境变量读取 |
-   | `DEPLY_HOST` | 现有部署服务器地址，沿用旧变量名 |
-   | `DEPLY_USERNAME` | 现有部署用户名，沿用旧变量名 |
-   | `SSH_PRIVATE_KEY` | 服务器发布私钥 |
-
-3. 创建 fine-grained PAT，仅选择 `PPPP.ink-site` 仓库并授予 **Actions: Read and write**。在**正文仓库**中保存为 `SITE_WORKFLOW_TOKEN`。也可以用 GitHub App token 替代。默认 `GITHUB_TOKEN` 无法操作另一个仓库。
-4. 在正文仓库启用新的 `.github/workflows/notify-site.yml`，替代原部署 workflow。若框架仓库改名，设置正文仓库变量 `SITE_REPOSITORY`。
-5. 分别验证一次正文 `main` 更新、框架 `main` 更新，并核对远端 `/build-info.json` 和文章、图片。两个分支均准备好、secrets 配置好后再切换生产，避免旧部署与新部署同时运行。
-
-GitHub 上已有的 Secret 无法读取明文，需要使用原始凭据重新配置。旧的 `SECRET_JS` 和 `PPPP_INK_PRIVATE_KEY` 不再被 workflow 使用；无需给新仓库配置私有内容访问权限。
-
-本次拆分保留正文仓库的既有历史，不需要强制推送。框架初始提交来自原正文仓库的 `b7f9169`；VuePress 及依赖版本沿用原 lockfile。Node.js 22 构建时由入口脚本为 webpack 4 开启 OpenSSL legacy provider。
+Valine/LeanCloud 的旧生态仍有传递依赖审计告警；本次保留历史评论兼容性，不将整个依赖树视为零漏洞。构建链使用的依赖与浏览器运行代码应分别评估，升级前不要直接使用 `npm audit fix --force`。

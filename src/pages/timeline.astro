@@ -1,0 +1,13 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import PostList from '@/components/PostList.astro'
+import { getPosts } from '@/utils/content'
+import { defaultLocale } from '@/config'
+const posts = (await getPosts()).filter(p => p.data.kind === 'post')
+const years = [...new Set(posts.map(p => p.data.published.getUTCFullYear()))]
+---
+<Layout postTitle="归档">
+  <div class="uno-decorative-line" />
+  <h1 class="mb-10 text-6 c-primary font-navbar">归档</h1>
+  {years.map(year => <section class="mb-12"><h2 class="mb-5 text-5 font-time">{year}</h2><PostList posts={posts.filter(p => p.data.published.getUTCFullYear() === year)} lang={defaultLocale} /></section>)}
+</Layout>

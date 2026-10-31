@@ -1,0 +1,94 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import type { Language } from '@/i18n/config'
+import { getCollection, render } from 'astro:content'
+import Comment from '@/components/Comment/Index.astro'
+import PostDate from '@/components/PostDate.astro'
+import TagList from '@/components/TagList.astro'
+import BackButton from '@/components/Widgets/BackButton.astro'
+import TOC from '@/components/Widgets/TOC.astro'
+import { getLangFromLocale } from '@/i18n/lang'
+import Layout from '@/layouts/Layout.astro'
+import { getPostDescription } from '@/utils/description'
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts')
+  return posts.map(post => ({
+    params: { path: post.data.url.replace(/^\//, '').replace(/\/$/, '') },
+    props: { post, supportedLangs: ['zh'] },
+  }))
+}
+
+interface Props {
+  post: CollectionEntry<'posts'>
+  supportedLangs: Language[]
+}
+
+const { post, supportedLangs } = Astro.props
+const currentLang = getLangFromLocale(Astro.currentLocale)
+const slug = post.data.abbrlink || post.id
+const description = getPostDescription(post, 'meta')
+const siblingDocs = post.data.sourcePath.endsWith('/README.md')
+  ? (await getCollection('posts')).filter(p => p.id !== post.id && p.data.sourcePath.startsWith(post.data.sourcePath.replace(/README\.md$/, '')))
+  : []
+const { Content, headings, remarkPluginFrontmatter } = await render(post)
+---
+
+<Layout
+  postTitle={post.data.title}
+  postDescription={description}
+  postSlug={post.id}
+  supportedLangs={supportedLangs}
+>
+  <article class="heti" data-pagefind-body>
+    <div class="relative">
+      <!-- Go Back Button On Desktop -->
+      <BackButton />
+      <!-- Title -->
+      <h1 class="post-title">
+        <span
+          transition:name={`post-${slug}${currentLang ? `-${currentLang}` : ''}`}
+          data-disable-theme-toggle-transition
+        >
+          {post.data.title}
+        </span>
+      </h1>
+    </div>
+
+    <!-- Date -->
+    <div
+      id="post-date"
+      class="mb-17.2 block c-primary font-time"
+      transition:name={`time-${slug}${currentLang ? `-${currentLang}` : ''}`}
+      data-disable-theme-toggle-transition
+    >
+      <PostDate
+        date={post.data.published}
+        updatedDate={post.data.updated}
+        minutes={remarkPluginFrontmatter.minutes}
+      />
+    </div>
+    <!-- TOC -->
+    {post.data.toc && <TOC headings={headings} />}
+    <!-- Content -->
+    <div id="post-content">
+      <Content />
+      {siblingDocs.length > 0 && <ul>{siblingDocs.map(p => <li><a href={p.data.url}>{p.data.title}</a></li>)}</ul>}
+      <p class="mt-12 text-3.5 op-70" data-pagefind-ignore>
+        <a href={`https://github.com/SincereXIA/PPPP.ink/edit/main/${post.data.sourcePath.split('/').map(encodeURIComponent).join('/')}`} target="_blank" rel="noopener noreferrer">在 GitHub 编辑此文</a>
+      </p>
+      <!-- Copyright -->
+      <div id="post-copyright" />
+      <!-- Tag List -->
+      {post.data.tags?.length > 0 && (
+        <div class="mt-12.6 uno-decorative-line" />
+        <TagList
+          tags={post.data.tags}
+          lang={currentLang}
+        />
+      )}
+      <!-- Comment -->
+      <Comment />
+    </div>
+  </article>
+</Layout>

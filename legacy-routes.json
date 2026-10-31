@@ -1,0 +1,21 @@
+{
+  "content/blogs/1-备案.md": "/blogs/1-bei-an.html",
+  "content/blogs/10-Kubernets节点OOM排查.md": "/blogs/10-kubernetsjie-dian-oompai-cha.html",
+  "content/blogs/11-文石 Boox Leaf Root & 修改字体.md": "/blogs/11-wen-shi-boox-leaf-root-xiu-gai-zi-ti.html",
+  "content/blogs/12-解决 clion remote development 无法通过 root 运行.md": "/blogs/12-jie-jue-clion-remote-development-wu-fa-tong-guo-root-yun-xing.html",
+  "content/blogs/2-Valine-Admin重定向问题.md": "/blogs/2-valine-adminchong-ding-xiang-wen-ti.html",
+  "content/blogs/3-关于这个新博客.md": "/blogs/3-guan-yu-zhe-ge-xin-bo-ke.html",
+  "content/blogs/4-vuepress favicon 配置.md": "/blogs/4-vuepress-favicon-pei-zhi.html",
+  "content/blogs/6-python_packet.md": "/blogs/6-python_packet.html",
+  "content/blogs/7-Windows_WinDbg.md": "/blogs/7-windows_windbg.html",
+  "content/blogs/8-鹅厂实习面试经历.md": "/blogs/8-e-han-shi-xi-mian-shi-jing-li.html",
+  "content/blogs/diary/2021/0608.md": "/blogs/diary/2021/0608.html",
+  "content/blogs/other/guide.md": "/blogs/other/guide.html",
+  "content/docs/buaa/1-算法.md": "/docs/buaa/1-suan-fa.html",
+  "content/docs/buaa/2-分布式操作系统.md": "/docs/buaa/2-fen-bu-shi-cao-zuo-xi-tong.html",
+  "content/docs/buaa/README.md": "/docs/buaa/",
+  "content/docs/theme-reco/api.md": "/docs/theme-reco/api.html",
+  "content/docs/theme-reco/README.md": "/docs/theme-reco/",
+  "content/docs/theme-reco/plugin.md": "/docs/theme-reco/plugin.html",
+  "content/docs/theme-reco/theme.md": "/docs/theme-reco/theme.html"
+}

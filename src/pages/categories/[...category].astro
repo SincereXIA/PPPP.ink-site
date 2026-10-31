@@ -1,0 +1,19 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import PostList from '@/components/PostList.astro'
+import { getPosts } from '@/utils/content'
+import { defaultLocale } from '@/config'
+export async function getStaticPaths() {
+  const posts = await getPosts()
+  const categories = [...new Set(posts.flatMap(p => p.data.categories))]
+  return [undefined, ...categories].map(category => ({ params: { category }, props: { category, posts: category ? posts.filter(p => p.data.categories.includes(category)) : posts.filter(p => p.data.categories.length) } }))
+}
+const { category, posts } = Astro.props
+const categories = [...new Set(posts.flatMap(p => p.data.categories))]
+---
+<Layout postTitle={category || '分类'}>
+  <div class="uno-decorative-line" />
+  <h1 class="mb-8 text-6 c-primary font-navbar">{category || '分类'}</h1>
+  <ul class="mb-10 flex flex-wrap gap-5">{categories.map(c => <li><a href={`/categories/${encodeURIComponent(c)}/`} class="highlight-hover">{c}</a></li>)}</ul>
+  <PostList posts={posts} lang={defaultLocale} />
+</Layout>
