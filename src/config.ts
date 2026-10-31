@@ -6,7 +6,7 @@ export const themeConfig: ThemeConfig = {
     // site title
     title: 'PPPP.ink',
     // site subtitle
-    subtitle: '粉墨 · 记录技术与生活',
+    subtitle: 'Personal Private Play Ground',
     // site description
     description: 'SincereXIA 的个人博客。记录技术实践、学习笔记和生活片段。',
     // use i18n title/subtitle/description from src/i18n/ui.ts instead of static ones above
