@@ -80,6 +80,10 @@ async function fixRelativeImagePaths(htmlContent: string, baseUrl: string): Prom
 
     imagePromises.push((async () => {
       try {
+        if (src.startsWith('/') && !src.startsWith('//')) {
+          img.setAttribute('src', new URL(src, baseUrl).toString())
+          return
+        }
         // Skip if not a relative path to src/content/posts/_images directory
         if (!src.startsWith('./') && !src.startsWith('../') && !src.startsWith('_images/')) {
           return

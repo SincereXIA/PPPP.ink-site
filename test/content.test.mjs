@@ -75,3 +75,10 @@ test('retains mark, subscript, superscript and legacy emoji without changing cod
   assert.match(children.filter(n=>n.type==='text').map(n=>n.value).join(''),/✅ ❌/)
   assert.equal(code.value,'==literal== :x:')
 })
+
+test('loads about text from the content repository without putting it in the article feed', t=>{
+  const f=fixture(t);f.write('source/content/about.md','---\ntitle: About\n---\nExternal about body')
+  const output=prepare(f)
+  assert.equal(output.entries.length,1)
+  assert.match(fs.readFileSync(path.join(f.siteRoot,'.build/about/about.md'),'utf8'),/External about body/)
+})

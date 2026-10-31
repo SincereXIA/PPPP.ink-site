@@ -5,7 +5,7 @@ import { getPageInfo } from '@/utils/page'
 const { currentLang, isHome, isPost, isTag, isAbout, getLocalizedPath } = getPageInfo(Astro.url.pathname)
 const currentUI = ui[currentLang as keyof typeof ui] ?? {}
 
-const isPostActive = isHome || isPost
+const isPostActive = isHome || (isPost && !Astro.url.pathname.startsWith('/docs/'))
 const isTagActive = isTag
 const isAboutActive = isAbout
 
