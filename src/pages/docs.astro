@@ -1,0 +1,13 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import PostList from '@/components/PostList.astro'
+import { getPosts } from '@/utils/content'
+import { defaultLocale } from '@/config'
+const posts = (await getPosts()).filter(p => p.data.kind === 'doc')
+---
+<Layout postTitle="文档">
+  <div class="uno-decorative-line" />
+  <h1 class="mb-8 text-6 c-primary font-navbar">文档</h1>
+  <p class="mb-10">专题资料与学习笔记。</p>
+  <PostList posts={posts} lang={defaultLocale} />
+</Layout>

@@ -1,0 +1,26 @@
+---
+const appKey = import.meta.env.VALINE_APP_KEY || ''
+---
+{appKey && <section class="mt-16 no-heti" data-pagefind-ignore aria-label="文章评论"><div id="valine-comments" data-app-key={appKey} /></section>}
+<script>
+let observer: IntersectionObserver | undefined
+let instance: { destroy?: () => void } | undefined
+function setup() {
+  observer?.disconnect()
+  const el = document.getElementById('valine-comments')
+  if (!el) return
+  observer = new IntersectionObserver(async entries => {
+    if (!entries.some(e => e.isIntersecting)) return
+    observer?.disconnect()
+    try {
+      const { default: Valine } = await import('valine')
+      if (!el.isConnected) return
+      instance = new Valine({ el, appId: 'vzuuxzwzT439zjrqDAdnfQdS-gzGzoHsz', appKey: el.dataset.appKey, path: decodeURIComponent(location.pathname), requiredFields: ['nick'], recordIP: false, enableQQ: true, lang: 'zh-CN', placeholder: '留下你的想法…' })
+    } catch { el.textContent = '评论暂时无法加载，请稍后重试。' }
+  }, { rootMargin: '200px' })
+  observer.observe(el)
+}
+document.addEventListener('astro:page-load', setup)
+document.addEventListener('astro:before-swap', () => { observer?.disconnect(); instance?.destroy?.(); instance = undefined })
+</script>
+<style is:global>.dark .v[data-class="v"] { color: inherit; } .dark .v[data-class="v"] .vwrap, .dark .v[data-class="v"] .vbtn { background: transparent; color: inherit; border-color: #666; } .v[data-class="v"] .vinput { color: inherit; } </style>

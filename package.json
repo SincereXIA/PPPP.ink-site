@@ -1,26 +1,69 @@
 {
-  "name": "PPPP.ink",
+  "name": "pppp-ink-site",
+  "type": "module",
   "version": "1.0.0",
-  "author": "reco_luan",
+  "repository": "https://github.com/SincereXIA/PPPP.ink-site",
   "scripts": {
-    "prepare:content": "node scripts/prepare.js",
-    "check:images": "node scripts/check-images.js",
-    "test": "node --test",
-    "dev": "node scripts/site.js dev",
-    "build": "node scripts/site.js build"
+    "prepare:content": "node scripts/prepare.mjs",
+    "check:images": "node scripts/check-images.cjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "astro check",
+    "dev": "node scripts/site.mjs dev",
+    "build": "node scripts/site.mjs build",
+    "preview": "astro preview --host 127.0.0.1",
+    "check:site": "node scripts/check-site.mjs",
+    "apply-lqip": "tsx scripts/apply-lqip.ts"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "8.1.2",
+    "@astrojs/partytown": "2.1.9",
+    "@astrojs/sitemap": "^3.7.2",
+    "@waline/client": "^3.13.0",
+    "astro": "7.4.4",
+    "feed": "^5.2.0",
+    "katex": "0.19.1",
+    "lite-youtube-embed": "^0.3.4",
+    "markdown-it": "^14.1.1",
+    "mdast-util-to-string": "^4.0.0",
+    "mermaid": "^11.14.0",
+    "node-html-parser": "^7.1.0",
+    "reading-time": "^1.5.0",
+    "rehype-katex": "^7.0.1",
+    "rehype-mermaid": "^3.0.0",
+    "rehype-slug": "^6.0.0",
+    "remark-directive": "^4.0.0",
+    "remark-math": "^6.0.0",
+    "sanitize-html": "^2.17.2",
+    "sharp": "0.35.5",
+    "twikoo": "^1.7.7",
+    "unist-util-visit": "^5.1.0",
+    "@astrojs/markdown-remark": "7.3.5",
+    "yaml": "^2.8.2",
+    "valine": "1.5.3",
+    "pagefind": "1.5.2",
+    "@resvg/resvg-js": "^2.6.2"
   },
   "devDependencies": {
-    "@maginapp/vuepress-plugin-katex": "^1.0.11",
-    "@vuepress-reco/vuepress-plugin-rss": "^1.0.2",
-    "@vuepress/plugin-register-components": "^1.8.2",
-    "vuepress": "1.8.2",
-    "vuepress-plugin-auto-sidebar": "^2.2.3",
-    "vuepress-plugin-md-enhance": "^1.18.2",
-    "vuepress-plugin-permalink-pinyin": "^1.0.0",
-    "vuepress-theme-reco": "1.6.6"
+    "@astrojs/check": "^0.9.8",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^25.6.0",
+    "@types/sanitize-html": "^2.16.1",
+    "@unocss/astro": "66.12.0",
+    "@unocss/preset-attributify": "66.12.0",
+    "@unocss/reset": "66.12.0",
+    "fast-glob": "^3.3.3",
+    "tsx": "^4.21.0",
+    "typescript": "~6.0.2",
+    "unocss": "66.12.0",
+    "unocss-preset-theme": "^0.14.1",
+    "playwright": "^1.64.1"
   },
-  "description": "PPPP.ink is Personal Private Playground",
-  "dependencies": {
-    "vuepress-plugin-sitemap": "^2.3.1"
+  "description": "PPPP.ink \u2014 Astro 7 with Retypeset",
+  "private": true,
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "overrides": {
+    "katex": "$katex"
   }
 }

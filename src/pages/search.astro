@@ -1,0 +1,31 @@
+---
+import Layout from '@/layouts/Layout.astro'
+---
+<Layout postTitle="搜索">
+  <div class="uno-decorative-line" />
+  <h1 class="mb-8 text-6 c-primary font-navbar">搜索</h1>
+  <p class="mb-8">搜索文章标题与正文。</p>
+  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+  <div id="search" data-pagefind-ignore></div>
+  <script is:inline data-astro-rerun>
+    (() => {
+      function initSearch() {
+        const el = document.getElementById('search');
+        if (!el || el.dataset.ready) return;
+        if (!window.PagefindUI) {
+          el.textContent = '搜索暂时无法加载，请刷新后重试。'; return;
+        }
+        el.textContent = '';
+        el.dataset.ready = 'true';
+        new window.PagefindUI({ element: '#search', showSubResults: true, showImages: false, translations: { placeholder: '输入关键词…', zero_results: '没有找到“[SEARCH_TERM]”', many_results: '找到 [COUNT] 条“[SEARCH_TERM]”相关结果', one_result: '找到 1 条“[SEARCH_TERM]”相关结果', searching: '搜索中…', clear_search: '清除' } });
+      }
+      if (window.PagefindUI) initSearch();
+      else { const s = document.createElement('script'); s.src = '/pagefind/pagefind-ui.js'; s.onload = initSearch; s.onerror = initSearch; document.head.append(s); }
+    })();
+  </script>
+</Layout>
+<style is:global>
+#search { --pagefind-ui-primary: currentColor; --pagefind-ui-text: currentColor; --pagefind-ui-background: transparent; --pagefind-ui-border: #aaa7; --pagefind-ui-border-radius: 0; --pagefind-ui-font: inherit; --pagefind-ui-scale: .9; }
+#search input { color: inherit; }
+#search .pagefind-ui__result-link { color: inherit; }
+</style>

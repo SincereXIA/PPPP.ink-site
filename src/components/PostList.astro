@@ -1,0 +1,108 @@
+---
+import type { Language } from '@/i18n/config'
+import type { Post } from '@/types'
+import PinIcon from '@/assets/icons/pin-icon.svg'
+import PostDate from '@/components/PostDate.astro'
+import { getPostPath } from '@/i18n/path'
+import { getPostDescription } from '@/utils/description'
+import { isHomePage } from '@/utils/page'
+
+export interface Props {
+  posts: Post[]
+  lang: Language
+  pinned?: boolean
+}
+
+const { posts, lang, pinned = false } = Astro.props
+const isHome = isHomePage(Astro.url.pathname)
+---
+
+<ul>
+  {posts.map((post) => {
+    const slug = post.data.abbrlink || post.id
+
+    return (
+      <li
+        class:list={[
+          'mb-5.5',
+          isHome ? 'post-list-row' : '',
+          isHome ? 'lg:mb-10' : '',
+        ]}
+      >
+        {isHome && post.data.cover && (
+          <a class="post-thumbnail" href={getPostPath(slug, lang)} aria-label={post.data.title} tabindex="-1" aria-hidden="true">
+            <img src={post.data.cover} alt="" width="320" height="216" loading="lazy" decoding="async" />
+          </a>
+        )}
+        <div class="post-list-text">
+        {/* post title */}
+        <h3 class="inline transition-colors hover:c-primary">
+          <a
+            class:list={[
+              'cjk:tracking-wide',
+              isHome ? 'lg:font-medium lg:text-4.5' : '',
+            ]}
+            href={getPostPath(slug, lang)}
+            transition:name={`post-${slug}${lang ? `-${lang}` : ''}`}
+            data-disable-theme-toggle-transition
+          >
+            {post.data.title}
+          </a>
+          {/* pinned icon */}
+          {pinned && (
+            <PinIcon
+              aria-hidden="true"
+              class="ml-0.25em inline-block aspect-square w-0.98em translate-y--0.1em lg:(w-1.05em translate-y--0.15em)"
+              fill="currentColor"
+            />
+          )}
+        </h3>
+
+        {/* mobile post time */}
+        <div
+          class:list={['py-0.8 text-3.5 font-time', isHome ? '' : 'lg:hidden']}
+          transition:name={`time-${slug}${lang ? `-${lang}` : ''}`}
+          data-disable-theme-toggle-transition
+        >
+          <PostDate
+            date={post.data.published}
+            minutes={post.remarkPluginFrontmatter.minutes}
+          />
+        </div>
+
+        {/* desktop post time */}
+        <div class:list={['hidden text-3.65 font-time', isHome ? '' : 'lg:(ml-2.5 inline)']}>
+          <PostDate
+            date={post.data.published}
+            minutes={post.remarkPluginFrontmatter.minutes}
+          />
+        </div>
+
+        {/* desktop post description */}
+        {isHome && (
+          <div
+            class="heti hidden"
+            lg="mt-2.25 block"
+          >
+            <p>{getPostDescription(post, 'list')}</p>
+          </div>
+        )}
+        </div>
+      </li>
+    )
+  })}
+</ul>
+
+<style>
+.post-list-row { display: flex; align-items: flex-start; gap: 1.5rem; }
+.post-thumbnail { flex: 0 0 9.5rem; display: block; overflow: hidden; }
+.post-thumbnail img { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; transition: opacity 200ms; }
+.post-thumbnail:hover img { opacity: .85; }
+.post-list-text { min-width: 0; flex: 1; }
+@media (min-width: 1024px) { .post-list-row { min-height: 6.4rem; } }
+@media (max-width: 640px) {
+  .post-list-row { gap: 1rem; }
+  .post-thumbnail { flex-basis: 5.25rem; }
+  .post-list-text h3 { line-height: 1.6; }
+}
+</style>
