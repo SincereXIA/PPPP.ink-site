@@ -27,6 +27,7 @@ npm run preview
 
 ## 内容接入
 
+- `content/about.md` 维护关于页正文。
 - `content/blogs/` 的公开文章显示在首页和归档；`content/docs/` 的文档显示在文档页，并参与全文搜索和订阅。
 - 兼容现有 `title`、`date`、`lastmod`、`tags`、`categories`；更新时间优先从内容仓库 Git 历史取得。
 - `publish: false`、`draft: true` 和带有非空 `keys` 的文章在组装时排除，开发预览也不加载。它们不会进入网页、搜索、订阅和 OG 图片；源文件与已存在的图片仍留在内容仓库。

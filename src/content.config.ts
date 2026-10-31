@@ -34,7 +34,7 @@ const posts = defineCollection({
 })
 
 const about = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/about' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './.build/about' }),
   schema: z.object({
     lang: z.enum(['', ...allLocales]).optional().default(''),
   }),

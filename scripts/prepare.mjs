@@ -32,8 +32,9 @@ export function prepare({ siteRoot = root, sourceRoot = contentRoot } = {}) {
   const build = path.join(siteRoot, '.build')
   const posts = path.join(build, 'posts')
   const assets = path.join(build, 'static')
+  const about = path.join(build, 'about')
   // Only known generated directories are replaced, never either repository.
-  for (const dir of [posts, assets]) { fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true }) }
+  for (const dir of [posts, assets, about]) { fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true }) }
   fs.cpSync(path.join(siteRoot, 'static'), assets, { recursive: true })
   const publicAssets = path.join(source, 'public')
   if (fs.existsSync(publicAssets)) {
@@ -61,6 +62,10 @@ export function prepare({ siteRoot = root, sourceRoot = contentRoot } = {}) {
     // Exclude before Astro sees the content: HTML, search, feeds and OG images
     // must not contain unpublished or formerly password-protected articles.
     if (data.publish === false || data.draft === true || (Array.isArray(data.keys) && data.keys.length)) { excluded.push(relative); continue }
+    if (relative === 'content/about.md') {
+      fs.writeFileSync(path.join(about, 'about.md'), '---\nlang: zh\n---\n' + body)
+      continue
+    }
     const id = crypto.createHash('sha256').update(relative).digest('hex').slice(0, 16)
     const url = legacy[relative] || data.permalink || '/' + relative.replace(/^content\//, '').replace(/README\.md$/, '').replace(/\.md$/, '.html')
     if (!url.startsWith('/') || url.startsWith('//') || /[?#\\]|\.\./.test(url)) throw new Error(`Invalid article URL: ${url}`)
